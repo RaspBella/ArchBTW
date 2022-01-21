@@ -1,4 +1,25 @@
 #!/bin/sh
+
+CHECK_UEFI(){
+    if [ -e /sys/firmware/efi/efivars ]; then
+    UEFI=true
+    else
+    UEFI=false
+    fi
+}
+
+GRUB_UEFI(){
+    yes | pacman -S grub efibootmgr
+    mkdir /boot/efi
+    mount /dev/vda1 /boot/efi
+    grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi
+}
+
+GRUB_LEGACY(){
+    yes | pacman -S grub
+    grub-install /dev/vda
+}
+
 ln -sf /usr/share/zoneinfo/Europe/London /etc/localtime
 hwclock --systohc
 echo en_GB.UTF-8 > /etc/locale.gen
@@ -9,7 +30,14 @@ echo test > /etc/hostname
 echo -e 127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\ttest > /etc/hosts
 mkinitcpio -P
 passwd
-yes | pacman -S grub
-grub-install /dev/vda
+
+#grub
+CHECK_UEFI
+if [ $UEFI = true ]; then
+GRUB_UEFI
+else
+GRUB_LEGACY
+fi
 grub-mkconfig -o /boot/grub/grub.cfg
+
 systemctl enable dhcpcd
