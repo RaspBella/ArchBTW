@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DISK=sdc
+DISK=vda
 
 CHECK_UEFI(){
     if [ -e /sys/firmware/efi/efivars ]; then
@@ -54,7 +54,7 @@ FDISK_CMDS
 FDISK_CMDS
     }
 
-    if [ $UEFI=true ]; then
+    if [ $UEFI = true ]; then
     UEFI_PART
     else
     LEGACY_PART
@@ -73,7 +73,7 @@ FORMATTING(){
         mkfs.ext4 /dev/"$DISK"2
     }
 
-    if [ $UEFI=true ]; then
+    if [ $UEFI = true ]; then
     UEFI_FORMAT
     else
     LEGACY_FORMAT
@@ -91,18 +91,18 @@ MOUNTING(){
         mount /dev/"$DISK"2 /mnt
     }
 
-    if [ $UEFI=true ]; then
+    if [ $UEFI = true ]; then
     UEFI_MOUNT
     else
     LEGACY_MOUNT
     fi
 }
 
-PACKAGES=(base linux linux-firmware nano dhcpcd iwd)
+PACKAGES=(base linux linux-firmware nano dhcpcd)
 
-#loadkeys uk
+loadkeys uk
 CHECK_UEFI
-#timedatectl set-ntp true
+timedatectl set-ntp true
 PARTITIONING
 FORMATTING
 MOUNTING
