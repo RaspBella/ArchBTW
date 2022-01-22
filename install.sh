@@ -70,9 +70,7 @@ FDISK_CMDS
 
     if [ $UEFI = true ]; then
     UEFI_PART
-    elseGET_DISK
-GET_PART_NUM_SCHEME
-echo $PART
+    else
     LEGACY_PART
     fi
 }
