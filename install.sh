@@ -60,9 +60,7 @@ FDISK_CMDS
         t
         swap
         n
-GET_DISK
-GET_PART_NUM_SCHEME
-echo $PART
+
 
 
 
@@ -136,7 +134,7 @@ arch-chroot /mnt ./chroot.sh
 
 #Unmounting
 umount -A $DISK
-if [ $UEFI = true]; then
+if [ $UEFI = true ]; then
 swapoff /dev/"$DISK""$PART"2
 else
 swapoff /dev/"$DISK""$PART"1

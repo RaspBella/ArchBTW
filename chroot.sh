@@ -29,7 +29,7 @@ GRUB_UEFI(){
 
 GRUB_LEGACY(){
     yes | pacman -S grub
-    grub-install /dev/"$DISK"
+    grub-install /dev/$DISK
 }
 
 ln -sf /usr/share/zoneinfo/Europe/London /etc/localtime
