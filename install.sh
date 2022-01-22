@@ -1,12 +1,26 @@
 #!/bin/sh
 
-DISK=vda
-
 CHECK_UEFI(){
     if [ -e /sys/firmware/efi/efivars ]; then
     UEFI=true
     else
     UEFI=false
+    fi
+}
+
+GET_DISK(){
+    DISKS=$(lsblk -d -n -o KNAME)
+    PS3="Please select a disk: "
+    select DISK in ${DISKS[*]}; do
+    break
+    done
+}
+
+GET_PART_NUM_SCHEME(){
+    if [[ $DISK = nvme??? ]]; then
+    PART=p
+    else
+    PART=""
     fi
 }
 
@@ -46,7 +60,9 @@ FDISK_CMDS
         t
         swap
         n
-
+GET_DISK
+GET_PART_NUM_SCHEME
+echo $PART
 
 
 
@@ -56,21 +72,23 @@ FDISK_CMDS
 
     if [ $UEFI = true ]; then
     UEFI_PART
-    else
+    elseGET_DISK
+GET_PART_NUM_SCHEME
+echo $PART
     LEGACY_PART
     fi
 }
 
 FORMATTING(){
     UEFI_FORMAT(){
-        mkfs.fat -F32 /dev/"$DISK"1
-        mkswap /dev/"$DISK"2
-        mkfs.ext4 /dev/"$DISK"3
+        mkfs.fat -F32 /dev/"$DISK""$PART"1
+        mkswap /dev/"$DISK""$PART"2
+        mkfs.ext4 /dev/"$DISK""$PART"3
     }
 
     LEGACY_FORMAT(){
-        mkswap /dev/"$DISK"1
-        mkfs.ext4 /dev/"$DISK"2
+        mkswap /dev/"$DISK""$PART"1
+        mkfs.ext4 /dev/"$DISK""$PART"2
     }
 
     if [ $UEFI = true ]; then
@@ -82,13 +100,13 @@ FORMATTING(){
 
 MOUNTING(){
     UEFI_MOUNT(){
-        swapon /dev/"$DISK"2
-        mount /dev/"$DISK"3 /mnt
+        swapon /dev/"$DISK""$PART"2
+        mount /dev/"$DISK""$PART"3 /mnt
     }
 
     LEGACY_MOUNT(){
-        swapon /dev/"$DISK"1
-        mount /dev/"$DISK"2 /mnt
+        swapon /dev/"$DISK""$PART"1
+        mount /dev/"$DISK""$PART"2 /mnt
     }
 
     if [ $UEFI = true ]; then
@@ -103,6 +121,8 @@ PACKAGES=(base linux linux-firmware nano dhcpcd)
 loadkeys uk
 CHECK_UEFI
 timedatectl set-ntp true
+GET_DISK
+GET_PART_NUM_SCHEME
 PARTITIONING
 FORMATTING
 MOUNTING
@@ -113,3 +133,11 @@ genfstab -U /mnt >> /mnt/etc/fstab
 #Arch chroot script
 cp chroot.sh /mnt/
 arch-chroot /mnt ./chroot.sh
+
+#Unmounting
+umount -A $DISK
+if [ $UEFI = true]; then
+swapoff /dev/"$DISK""$PART"2
+else
+swapoff /dev/"$DISK""$PART"1
+fi

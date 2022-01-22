@@ -8,16 +8,28 @@ CHECK_UEFI(){
     fi
 }
 
+GET_DISK(){
+    DISK=$(lsblk -n -o PKNAME $(findmnt -n -o SOURCE /))
+}
+
+GET_PART_NUM_SCHEME(){
+    if [[ $DISK = nvme??? ]]; then
+    PART=p
+    else
+    PART=""
+    fi
+}
+
 GRUB_UEFI(){
     yes | pacman -S grub efibootmgr
     mkdir /boot/efi
-    mount /dev/vda1 /boot/efi
+    mount /dev/"$DISK""$PART"1 /boot/efi
     grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi
 }
 
 GRUB_LEGACY(){
     yes | pacman -S grub
-    grub-install /dev/vda
+    grub-install /dev/"$DISK"
 }
 
 ln -sf /usr/share/zoneinfo/Europe/London /etc/localtime
@@ -30,6 +42,9 @@ echo test > /etc/hostname
 echo -e 127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\ttest > /etc/hosts
 mkinitcpio -P
 passwd
+
+GET_DISK
+GET_PART_NUM_SCHEME
 
 #grub
 CHECK_UEFI
