@@ -131,7 +131,7 @@ cp chroot.sh /mnt/
 arch-chroot /mnt ./chroot.sh
 
 #Unmounting
-umount -A $DISK
+umount -A /dev/$DISK
 if [ $UEFI = true ]; then
 swapoff /dev/"$DISK""$PART"2
 else
