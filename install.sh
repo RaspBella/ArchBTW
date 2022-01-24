@@ -128,6 +128,7 @@ genfstab -U /mnt >> /mnt/etc/fstab
 
 #Arch chroot script
 curl -L https://raw.githubusercontent.com/RaspBella/ArchBTW/main/chroot.sh > /mnt/chroot.sh
+chmod +x /mnt/chroot.sh
 arch-chroot /mnt ./chroot.sh
 
 #Unmounting
