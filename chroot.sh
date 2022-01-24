@@ -70,11 +70,15 @@ if [ $username != "" ]; then
     case $sudoer in
           [yY][eE][sS]|[yY]|"")
                 useradd -m -G wheel $username
+                echo Enter password:
+                passwd $username
                 yes | pacman -S sudo
                 echo -e "\n#Added by chroot.sh\n%wheel ALL=(ALL) ALL" | sudo EDITOR='tee -a' visudo
                 ;;
           [nN][oO]|[nN])
                 useradd -m $username
+                echo Enter password:
+                passwd $username
                 ;;
     esac
 fi
