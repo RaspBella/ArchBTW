@@ -40,11 +40,12 @@ echo LANG=en_GB.UTF-8 > /etc/locale.conf
 echo KEYMAP=uk > /etc/vconsole.conf
 
 #Get desired hostname
-read -p 'Please enter a hostname: ' hostname
+read -p "Please enter a hostname: " hostname
 
 echo $hostname > /etc/hostname
 echo -e 127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t$hostname > /etc/hosts
 mkinitcpio -P
+echo Please enter the root users password:
 passwd
 
 GET_DISK
@@ -60,3 +61,20 @@ fi
 grub-mkconfig -o /boot/grub/grub.cfg
 
 systemctl enable dhcpcd
+
+# Making a user
+read -p "What is your desired username?(leave blank for root user only) " username
+
+if [ $username != "" ]; then
+    read -r -p "Will $username be a sudo user? [Y/n] " sudoer
+    case $sudoer in
+          [yY][eE][sS]|[yY]|"")
+                useradd -m -G wheel $username
+                yes | pacman -S sudo
+                echo -e "\n#Added by chroot.sh\n%wheel ALL=(ALL) ALL" | sudo EDITOR='tee -a' visudo
+                ;;
+          [nN][oO]|[nN])
+                useradd -m $username
+                ;;
+    esac
+fi

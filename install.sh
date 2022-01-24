@@ -127,7 +127,7 @@ pacstrap /mnt ${PACKAGES[*]}
 genfstab -U /mnt >> /mnt/etc/fstab
 
 #Arch chroot script
-cp chroot.sh /mnt/
+curl -L https://raw.githubusercontent.com/RaspBella/ArchBTW/main/chroot.sh > /mnt/chroot.sh
 arch-chroot /mnt ./chroot.sh
 
 #Unmounting
