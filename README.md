@@ -3,5 +3,6 @@ Just another Arch Linux install script but made by me.
 ---
 **To install**
 - While in Arch ISO
-- ```curl -L https://raw.githubusercontent.com/RaspBella/ArchBTW/main/install.sh | sh```
+- ```yes | pacman -Sy git && git clone https://github.com/RaspBella/ArchBTW.git && cd ArchBTW && ./install.sh'''
 ---
+https://git'
