@@ -62,6 +62,10 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 systemctl enable dhcpcd
 
+if [ $(pacman -Qqk iwd)="" ]; then
+systemctl enable iwd
+fi
+
 # Making a user
 read -p "What is your desired username?(leave blank for root user only) " username
 
