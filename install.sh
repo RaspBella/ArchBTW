@@ -138,12 +138,11 @@ PARTITIONING
 FORMATTING
 MOUNTING
 reflector -c GB
-WIFi_OR_NOT
+WIFI_OR_NOT
 pacstrap /mnt ${PACKAGES[*]}
 genfstab -U /mnt >> /mnt/etc/fstab
 
 #Arch chroot script
-curl -L https://raw.githubusercontent.com/RaspBella/ArchBTW/main/chroot.sh > chroot.sh
 chmod +x chroot.sh
 mv chroot.sh /mnt
 arch-chroot /mnt ./chroot.sh
