@@ -143,9 +143,11 @@ pacstrap /mnt ${PACKAGES[*]}
 genfstab -U /mnt >> /mnt/etc/fstab
 
 #Arch chroot script
-chmod +x chroot.sh
 mv chroot.sh /mnt
 arch-chroot /mnt ./chroot.sh
+
+#Removing the chroot script
+rm /mnt/chroot.sh
 
 #Unmounting
 if [ $UEFI = true ]; then
