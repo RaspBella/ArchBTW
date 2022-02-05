@@ -117,13 +117,13 @@ PACKAGES=(base linux linux-firmware dhcpcd vim)
 WIFI_OR_NOT(){
     read -r -p "Will you be using WiFi? [y/N] " WIFI
     case $WIFI in
-        [yY][eE][sS]|[yY]|"")
+        [yY][eE][sS]|[yY])
             PACKAGES+=(iwd)
             WIFI_MESSAGE="When you boot into installed system you will have to connect to the internet with
             iwctl station DEVICE connect SSID
             e.g DEVICE could be wlan0 and SSID could be home-wifi"
             ;;
-        [nN][oO]|[nN])
+        [nN][oO]|[nN]|"")
             WIFI_MESSAGE=""
             ;;
     esac
