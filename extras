@@ -1,0 +1,16 @@
+define info
+Usage: make -f extras [OPTION]
+OPTIONS:
+	XFCE
+endef
+
+sudo="Please use sudo or run as root"
+
+export info
+all:
+	@echo "$$info"
+
+XFCE:
+	#will be adding if,else soon, for sudo message.
+	#pacman -S --needed xorg xfce4 xfce4-goodies pipewire gvfs lightdm lightdm-gtk-greeter
+	#systemctl enable lightdm

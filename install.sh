@@ -119,7 +119,7 @@ WIFI_OR_NOT(){
     case $WIFI in
         [yY][eE][sS]|[yY])
             PACKAGES+=(iwd)
-            WIFI_MESSAGE="When you boot into installed system you will have to connect to the internet with
+            WIFI_MESSAGE="When you boot into Arch after installing you will have to connect to the internet with
             iwctl station DEVICE connect SSID
             e.g DEVICE could be wlan0 and SSID could be home-wifi"
             ;;
@@ -129,6 +129,7 @@ WIFI_OR_NOT(){
     esac
 }
 
+#Main commands/funcs
 loadkeys uk
 CHECK_UEFI
 timedatectl set-ntp true
@@ -142,8 +143,9 @@ WIFI_OR_NOT
 pacstrap /mnt ${PACKAGES[*]}
 genfstab -U /mnt >> /mnt/etc/fstab
 
-#Arch chroot script
+#Arch chroot script, extras script
 mv chroot.sh /mnt
+mv extras /mnt
 arch-chroot /mnt ./chroot.sh
 
 #Removing the chroot script
@@ -161,3 +163,6 @@ fi
 
 if [ ! -z $WIFI_MESSAGE ]; then
 echo $WIFI_MESSAGE
+
+#Extra message
+echo "ArchBTW is done, if however you want a Graphical environment and don't know where to start run 'make -f extras' from your home directory after rebooting, as the script will be putting a makefile in your users home directory."
