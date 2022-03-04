@@ -112,7 +112,7 @@ MOUNTING(){
     fi
 }
 
-PACKAGES=(base linux linux-firmware dhcpcd vim)
+PACKAGES=(base linux linux-firmware dhcpcd vim make)
 
 WIFI_OR_NOT(){
     read -r -p "Will you be using WiFi? [y/N] " WIFI
