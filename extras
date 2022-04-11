@@ -8,8 +8,6 @@ endef
 
 export info
 
-pipewire=pipewire pipewire-alsa pipewire-jack pipewire-media-session
-
 all:
 	@echo "$$info"
 
@@ -20,13 +18,13 @@ sudo-required:
 	fi
 
 GNOME: sudo-required
-	@pacman -S --needed --noconfirm gnome $(pipewire)
+	@pacman -S --needed --noconfirm xorg gnome
 	@systemctl enable gdm
 
 KDE: sudo-required
-	@pacman -S --needed --noconfirm plasma kde-applications $(pipewire)
+	@pacman -S --needed --noconfirm xorg plasma kde-applications
 	@systemctl enable sddm
 
 XFCE: sudo-required
-	@pacman -S --needed --noconfirm xfce4 xfce4-goodies gvfs lightdm lightdm-gtk-greeter $(pipewire)
+	@pacman -S --needed --noconfirm xorg xfce4 xfce4-goodies gvfs lightdm lightdm-gtk-greeter
 	@systemctl enable lightdm
