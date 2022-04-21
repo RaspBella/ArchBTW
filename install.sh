@@ -155,4 +155,4 @@ if [ ! -z $WIFI_MESSAGE ]; then
 echo $WIFI_MESSAGE
 
 #Extra message
-echo "ArchBTW is done, if however you want a Graphical environment and don't know where to start run 'make -f extras' from your home directory after rebooting, as the script will be putting a makefile in your users home directory."
+echo "ArchBTW is done, after rebooting into your new system you can run extras.sh to install a GUI environment."
