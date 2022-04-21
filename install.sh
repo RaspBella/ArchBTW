@@ -37,13 +37,6 @@ PARTITIONING(){
         n
 
 
-        +4G
-        t
-
-        swap
-        n
-
-
 
         w
 FDISK_CMDS
@@ -52,13 +45,6 @@ FDISK_CMDS
     LEGACY_PART(){
         fdisk /dev/$DISK << FDISK_CMDS
         o
-        n
-
-
-
-        +4G
-        t
-        swap
         n
 
 
@@ -78,13 +64,11 @@ FDISK_CMDS
 FORMATTING(){
     UEFI_FORMAT(){
         mkfs.fat -F32 /dev/"$DISK""$PART"1
-        mkswap /dev/"$DISK""$PART"2
-        mkfs.ext4 /dev/"$DISK""$PART"3
+        mkfs.ext4 /dev/"$DISK""$PART"2
     }
 
     LEGACY_FORMAT(){
-        mkswap /dev/"$DISK""$PART"1
-        mkfs.ext4 /dev/"$DISK""$PART"2
+        mkfs.ext4 /dev/"$DISK""$PART"1
     }
 
     if [ $UEFI = true ]; then
@@ -96,13 +80,11 @@ FORMATTING(){
 
 MOUNTING(){
     UEFI_MOUNT(){
-        swapon /dev/"$DISK""$PART"2
-        mount /dev/"$DISK""$PART"3 /mnt
+        mount /dev/"$DISK""$PART"2 /mnt
     }
 
     LEGACY_MOUNT(){
-        swapon /dev/"$DISK""$PART"1
-        mount /dev/"$DISK""$PART"2 /mnt
+        mount /dev/"$DISK""$PART"1 /mnt
     }
 
     if [ $UEFI = true ]; then
@@ -112,7 +94,7 @@ MOUNTING(){
     fi
 }
 
-PACKAGES=(base linux linux-firmware dhcpcd vim make)
+PACKAGES=(base linux linux-firmware dhcpcd vim)
 
 WIFI_OR_NOT(){
     read -r -p "Will you be using WiFi? [y/N] " WIFI
@@ -143,9 +125,17 @@ WIFI_OR_NOT
 pacstrap /mnt ${PACKAGES[*]}
 genfstab -U /mnt >> /mnt/etc/fstab
 
+#Swap stuff
+fallocate -l 4G /mnt/swapfile
+chmod 600 /mnt/swapfile
+mkswap /mnt/swapfile
+swapon /mnt/swapfile
+echo -e "#Swapfile\n/swapfile\tswap\tswap\tdefaults\t0\t0" >> /mnt/etc/fstab
+echo "vm.swappiness=10" >> /mnt/etc/sysctl.d/99-swappiness.conf
+
 #Arch chroot script, extras script
 mv chroot.sh /mnt
-mv extras /mnt
+mv extras.sh /mnt
 arch-chroot /mnt ./chroot.sh
 
 #Removing the chroot script
@@ -154,11 +144,11 @@ rm /mnt/chroot.sh
 #Unmounting
 if [ $UEFI = true ]; then
 umount /dev/"$DISK""$PART"1
-swapoff /dev/"$DISK""$PART"2
-umount /dev/"$DISK""$PART"3
-else
-swapoff /dev/"$DISK""$PART"1
+swapoff /mnt/swapfile
 umount /dev/"$DISK""$PART"2
+else
+swapoff /mnt/swapfile
+umount /dev/"$DISK""$PART"1
 fi
 
 if [ ! -z $WIFI_MESSAGE ]; then

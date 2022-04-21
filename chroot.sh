@@ -85,7 +85,7 @@ if [ $username != "" ]; then
                 passwd $username
                 ;;
     esac
-    mv /extras /home/$username/
+    mv /extras.sh /home/$username/
 else
-    mv /extras /root/
+    mv /extras.sh /root/
 fi
