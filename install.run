@@ -1,0 +1,140 @@
+#!/bin/bash
+
+# Define functions
+y_OR_N(){
+    read -r -p "$@" ANSWER
+    case $ANSWER in
+        [yY][eE][sS]|[yY])
+            echo "yes"
+            ;;
+        [nN][oO]|[nN]|"")
+            echo "no"
+            ;;
+    esac
+}
+CHECK_UEFI(){
+    if [ -e /sys/firmware/efi/efivars ]; then UEFI=yes; else UEFI=no; fi
+}
+WHICH_DISK(){
+    echo "Please choose a disk to install to"
+    DISKS=$(lsblk -o KNAME,TYPE | grep disk | awk '{print $1}')
+    select DISK in $DISKS; do break; done
+}
+DO_YOU_WANT_LUKS(){
+    LUKS=$(y_OR_N "Do you want to use LUKS encryption? [y/N] ")
+}
+DO_YOU_WANT_LVM(){
+    LVM=$(y_OR_N "Do you want to use Logical Volume Management? [y/N] ")
+}
+GET_PART_SCHEME(){
+    if [[ $DISK = nvme??? ]]; then PART="p"; else PART=""; fi
+}
+LUKS_SETUP(){
+    if [ $UEFI=yes ]; then
+        fdisk /dev/$DISK << EOF
+        g
+        n
+
+
+        +0.5G
+        t
+        uefi
+        n
+
+
+
+        w
+EOF
+        mkfs.fat -F32 /dev/"$DISK""$PART"1
+    else
+        ###bios###shit
+    fi
+    cryptsetup -q luksFormat -c aes-xts-plain64 -s 512 /dev/"$DISK""$PART"2
+    cryptsetup luksOpen /dev/"$DISK""$PART"2 luks_volume_unlocked
+    if [ $LVM=no ]; then
+        mount /dev/mapper/luks_volume_unlocked /mnt
+    fi
+}
+LVM_SETUP(){
+    if [ $UEFI=yes ]; then
+        if [ $LUKS=yes ]; then
+            pvcreate /dev/mapper/luks_volume_unlocked
+            vgcreate -s 16M $VGNAME /dev/mapper/luks_volume_unlocked
+        else
+            fdisk /dev/$DISK << EOF
+            g
+            n
+
+
+            +0.5G
+            t
+            uefi
+            n
+
+
+
+            t
+            lvm
+            w
+EOF
+            mkfs.fat -F32 /dev/"$DISK""$PART"1
+            pvcreate /dev/"$DISK""$PART"2
+            vgcreate -s 16M $VGNAME /dev/"$DISK""$PART"2
+        fi
+    else
+        ###bios###shit
+    fi
+    # logical volumes will be custom or default in the future, for now just the defaults
+    lvcreate -l 60%FREE -n home $VGNAME
+    lvcreate -l 100%FREE -n root $VGNAME
+    mkfs.ext4 -m1 /dev/$VGNAME/root
+    mkfs.ext4 -m1 /dev/$VGNAME/home
+    mount /dev/$VGNAME/root /mnt
+    mount --mkdir /dev/$VGNAME/home /mnt/home
+}
+STANDARD_SETUP(){
+    if [ $UEFI=yes ]; then
+        fdisk /dev/$DISK << EOF
+        g
+        n
+
+
+        +0.5G
+        t
+        uefi
+        n
+
+
+
+        w
+EOF
+        mkfs.fat -F32 /dev/"$DISK""$PART"1
+        mkfs.ext4 -L root /dev/"$DISK""$PART"2
+        mount /dev/disk/by-label/root /mnt
+}
+SWAP_SETUP(){
+    dd if=/dev/zero of=/mnt/swapfile bs=1024 count=4194304
+    chmod 0600 /mnt/swapfile
+    mkswap /mnt/swapfile
+    swapon /mnt/swapfile
+    ###add to etc fstab
+}
+
+# Import config
+source "install.config"
+
+# Check imported variables
+if [ -z "$UEFI" ]; then CHECK_UEFI; fi
+if [ -z "$DISK" ]; then WHICH_DISK; fi
+if [ -z "$LUKS" ]; then DO_YOU_WANT_LUKS; fi
+if [ -z "$LVM" ]; then DO_YOU_WANT_LVM; if [ -z "$VGNAME" ];then VGNAME="ArchBTW"; fi; fi
+
+# Main commands/functions
+#loadkeys uk
+#timedatectl set-ntp true
+GET_PART_SCHEME
+if [ $LUKS=yes ]; then LUKS_SETUP; fi
+if [ $LVM=yes ]; then LVM_SETUP; fi
+if [ $LUKS=no && $LVM=no ]; then STANDARD_SETUP; fi
+### add root to etc fstab
+SWAP_SETUP
