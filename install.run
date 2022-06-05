@@ -53,6 +53,7 @@ EOF
     cryptsetup luksOpen /dev/"$DISK""$PART"2 luks_volume_unlocked
     if [ $LVM=no ]; then
         mount /dev/mapper/luks_volume_unlocked /mnt
+        mount --mkdir /dev/"$DISK""$PART"1 /mnt/boot
     fi
 }
 LVM_SETUP(){
@@ -91,6 +92,7 @@ EOF
     mkfs.ext4 -m1 /dev/$VGNAME/home
     mount /dev/$VGNAME/root /mnt
     mount --mkdir /dev/$VGNAME/home /mnt/home
+    mount --mkdir /dev/"$DISK""$PART"1 /mnt/boot
 }
 STANDARD_SETUP(){
     if [ $UEFI=yes ]; then
@@ -111,13 +113,13 @@ EOF
         mkfs.fat -F32 /dev/"$DISK""$PART"1
         mkfs.ext4 -L root /dev/"$DISK""$PART"2
         mount /dev/disk/by-label/root /mnt
+        mount --mkdir /dev/"$DISK""$PART"1 /mnt/boot
 }
 SWAP_SETUP(){
     dd if=/dev/zero of=/mnt/swapfile bs=1024 count=4194304
     chmod 0600 /mnt/swapfile
     mkswap /mnt/swapfile
     swapon /mnt/swapfile
-    ###add to etc fstab
 }
 
 # Import config
@@ -128,6 +130,7 @@ if [ -z "$UEFI" ]; then CHECK_UEFI; fi
 if [ -z "$DISK" ]; then WHICH_DISK; fi
 if [ -z "$LUKS" ]; then DO_YOU_WANT_LUKS; fi
 if [ -z "$LVM" ]; then DO_YOU_WANT_LVM; if [ -z "$VGNAME" ];then VGNAME="ArchBTW"; fi; fi
+if [ -z "$PACKAGES" ]; then PACKAGES=(base linux linux-firmware); fi
 
 # Main commands/functions
 #loadkeys uk
@@ -136,5 +139,7 @@ GET_PART_SCHEME
 if [ $LUKS=yes ]; then LUKS_SETUP; fi
 if [ $LVM=yes ]; then LVM_SETUP; fi
 if [ $LUKS=no && $LVM=no ]; then STANDARD_SETUP; fi
-### add root to etc fstab
 SWAP_SETUP
+pacstrap /mnt $PACKAGES
+genfstab -U /mnt >> /mnt/etc/fstab
+###chroot
