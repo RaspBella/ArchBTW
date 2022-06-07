@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Define functions
+
+
+# Import variables from config
+source install.config
+
+# Check imported variables
+if [ -z $TIMEZONE ]; then read -p "Enter a valid Timezone, e.g; Europe/London" TIMEZONE; fi
+if [ -z $LOCALE ]; then read -p "Enter your locale, e.g; en_GB" LOCALE; fi
+if [ -z $KEYMAP ]; then read -p "Enter your keymap, e.g; uk" KEYMAP; fi
+if [ -z $HOSTNAME ]; then read -p "Enter your desired hostname" HOSTNAME; fi
+
+# Main commands/functions
+ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+hwclock --systohc
+echo "$LOCALE".UTF-8 UTF-8 > /etc/locale.gen
+locale-gen
+echo LANG="$LOCALE".UTF-8 > /etc/locale.conf
+echo KEYMAP=$KEYMAP > /etc/vconsole.conf
