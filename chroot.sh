@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 CHECK_UEFI(){
     if [ -e /sys/firmware/efi/efivars ]; then
@@ -43,7 +43,7 @@ echo KEYMAP=uk > /etc/vconsole.conf
 read -p "Please enter a hostname: " hostname
 
 echo $hostname > /etc/hostname
-echo -e 127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t$hostname > /etc/hosts
+echo -e "127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t$hostname" > /etc/hosts
 mkinitcpio -P
 echo Please enter the root users password:
 passwd
